@@ -1,0 +1,29 @@
+{
+  "name": "saxulum/saxulum-lazy-service",
+  "description": "A simple way to create lazy service with pimple",
+  "keywords": ["saxulum", "silex", "pimple", "lazy"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Dominik Zogg",
+      "email": "dominik.zogg@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.3",
+    "nikic/php-parser": "~1.2"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~4.0",
+    "nikic/php-parser": "~1.2",
+    "pimple/pimple": "~3.0"
+  },
+  "autoload": {
+    "psr-4": { "Saxulum\\LazyService\\": "src/" }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.0.x-dev"
+    }
+  }
+}
