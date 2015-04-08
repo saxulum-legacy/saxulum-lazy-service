@@ -1,7 +1,7 @@
 {
   "name": "saxulum/saxulum-lazy-service",
   "description": "A simple way to create lazy service with pimple",
-  "keywords": ["saxulum", "silex", "pimple", "lazy"],
+  "keywords": ["saxulum", "silex", "pimple", "symfony", "lazy service"],
   "license": "MIT",
   "authors": [
     {
