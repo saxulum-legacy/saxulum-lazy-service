@@ -163,27 +163,8 @@ class Generator
      */
     protected function generateMethodOriginalNode(Mapping $mapping, $reflectionMethod)
     {
-        /** @var ConstructArgument[] $constructArgumentsByName */
-        $constructArgumentsByName = array();
-        foreach ($mapping->getOriginalClassConstructArguments() as $constructArgument) {
-            $constructArgumentsByName[$constructArgument->getName()] = $constructArgument;
-        }
-
-        $args = array();
-        foreach ($reflectionMethod->getParameters() as $reflectionParameter) {
-            if (isset($constructArgumentsByName[$reflectionParameter->getName()])) {
-                $constructArgument = $constructArgumentsByName[$reflectionParameter->getName()];
-                $args[] = new MethodCall(
-                    new PropertyFetch(new Variable('this'), self::PROP_CONTAINER),
-                    $constructArgument->getContainerMethod(),
-                    array(
-                        new Arg(new String_($constructArgument->getContainerKey())),
-                    )
-                );
-            } else {
-                $args[] = new ConstFetch(new Name('null'));
-            }
-        }
+        $constructArgumentsByName = $this->getConstructArgumentsByName($mapping);
+        $args = $this->generateOriginalArgumentNodes($reflectionMethod, $constructArgumentsByName);
 
         return new ClassMethod(self::PROP_ORIGINAL, array(
             'type' => 2,
@@ -207,6 +188,48 @@ class Generator
                 ),
             ),
         ));
+    }
+
+    /**
+     * @param Mapping $mapping
+     *
+     * @return ConstructArgument[]
+     */
+    protected function getConstructArgumentsByName(Mapping $mapping)
+    {
+        $constructArgumentsByName = array();
+        foreach ($mapping->getOriginalClassConstructArguments() as $constructArgument) {
+            $constructArgumentsByName[$constructArgument->getName()] = $constructArgument;
+        }
+
+        return $constructArgumentsByName;
+    }
+
+    /**
+     * @param \ReflectionMethod   $reflectionMethod
+     * @param ConstructArgument[] $constructArgumentsByName
+     *
+     * @return Arg[]
+     */
+    protected function generateOriginalArgumentNodes(\ReflectionMethod $reflectionMethod, array $constructArgumentsByName)
+    {
+        $args = array();
+        foreach ($reflectionMethod->getParameters() as $reflectionParameter) {
+            if (isset($constructArgumentsByName[$reflectionParameter->getName()])) {
+                $constructArgument = $constructArgumentsByName[$reflectionParameter->getName()];
+                $args[] = new MethodCall(
+                    new PropertyFetch(new Variable('this'), self::PROP_CONTAINER),
+                    $constructArgument->getContainerMethod(),
+                    array(
+                        new Arg(new String_($constructArgument->getContainerKey())),
+                    )
+                );
+            } else {
+                $args[] = new Arg(new ConstFetch(new Name('null')));
+            }
+        }
+
+        return $args;
     }
 
     /**
