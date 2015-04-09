@@ -72,7 +72,7 @@ class Generator
 
         $phpCode = '<?php' . "\n\n" . $this->phpGenerator->prettyPrint(array($classNode));
 
-        file_put_contents($path . DIRECTORY_SEPARATOR . $lazyClass . ' . php', $phpCode);
+        file_put_contents($path . DIRECTORY_SEPARATOR . $lazyClass . '.php', $phpCode);
     }
 
     /**
