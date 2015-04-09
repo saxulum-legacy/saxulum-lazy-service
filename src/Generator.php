@@ -122,12 +122,11 @@ class Generator
         foreach ($reflectionClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $reflectionMethod) {
             if ($reflectionMethod->getName() === '__construct') {
                 $classMethodNodes[] = $this->generateMethodConstructNode();
+                $classMethodNodes[] = $this->generateMethodOriginalNode($mapping, $reflectionMethod);
             } else {
                 $classMethodNodes[] = $this->generateMethodNode($reflectionMethod);
             }
         }
-
-        $classMethodNodes[] = $this->generateMethodOriginalNode($mapping);
 
         return $classMethodNodes;
     }
@@ -156,21 +155,33 @@ class Generator
     }
 
     /**
-     * @param Mapping $mapping
+     * @param Mapping           $mapping
+     * @param \ReflectionMethod $reflectionMethod
      *
      * @return ClassMethod
      */
-    protected function generateMethodOriginalNode(Mapping $mapping)
+    protected function generateMethodOriginalNode(Mapping $mapping, $reflectionMethod)
     {
-        $args = array();
+        /** @var ConstructArgument[] $constructArgumentsByName */
+        $constructArgumentsByName = array();
         foreach ($mapping->getOriginalClassConstructArguments() as $constructArgument) {
-            $args[] = new MethodCall(
-                new PropertyFetch(new Variable('this'), self::PROP_CONTAINER),
-                'get',
-                array(
-                    new String_($constructArgument->getServiceName()),
-                )
-            );
+            $constructArgumentsByName[$constructArgument->getName()] = $constructArgument;
+        }
+
+        $args = array();
+        foreach ($reflectionMethod->getParameters() as $reflectionParameter) {
+            if (isset($constructArgumentsByName[$reflectionParameter->getName()])) {
+                $constructArgument = $constructArgumentsByName[$reflectionParameter->getName()];
+                $args[] = new MethodCall(
+                    new PropertyFetch(new Variable('this'), self::PROP_CONTAINER),
+                    $constructArgument->getContainerMethod(),
+                    array(
+                        new String_($constructArgument->getContainerKey()),
+                    )
+                );
+            } else {
+                $args[] = new ConstFetch(new Name('null'));
+            }
         }
 
         return new ClassMethod(self::PROP_ORIGINAL, array(

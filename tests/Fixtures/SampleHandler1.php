@@ -7,14 +7,28 @@ class SampleHandler1
     /**
      * @var string
      */
-    protected $value1;
+    protected $param1;
 
     /**
-     * @param string $value1
+     * @var string
      */
-    public function __construct($value1)
+    protected $param2;
+
+    /**
+     * @var string
+     */
+    protected $param3;
+
+    /**
+     * @param string $param1
+     * @param string $param2
+     * @param string $param3
+     */
+    public function __construct($param1, $param2, $param3)
     {
-        $this->value1 = $value1;
+        $this->param1 = $param1;
+        $this->param2 = $param2;
+        $this->param3 = $param3;
     }
 
     /**
@@ -24,6 +38,6 @@ class SampleHandler1
      */
     public function handle($prefix)
     {
-        return $prefix.$this->value1;
+        return $prefix.'_'.$this->param1.'_'.$this->param2.'_'.$this->param3;
     }
 }

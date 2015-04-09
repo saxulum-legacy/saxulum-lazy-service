@@ -21,7 +21,8 @@ class LazyServiceGeneratorTest extends \PHPUnit_Framework_TestCase
             'Saxulum\Tests\LazyService\Fixtures\SampleHandler1',
             'Saxulum\Generated\LazyService\SampleHandler1',
             array(
-                new ConstructArgument('value1'),
+                new ConstructArgument('param1', 'value1', ConstructArgument::CONTAINER_METHOD_GETPARAMETER),
+                new ConstructArgument('param3', 'value3', ConstructArgument::CONTAINER_METHOD_GETPARAMETER),
             )
         );
 
@@ -34,7 +35,8 @@ class LazyServiceGeneratorTest extends \PHPUnit_Framework_TestCase
 
         $container = new Container();
 
-        $container['value1'] = 'test';
+        $container['value1'] = 'value1';
+        $container['value3'] = 'value3';
 
         $container['sample1'] = function () use ($container) {
             return new SampleHandler1(new PimpleAdapter($container));
@@ -44,6 +46,6 @@ class LazyServiceGeneratorTest extends \PHPUnit_Framework_TestCase
             return new SampleHandler2($container['sample1']);
         };
 
-        $this->assertEquals('newtest', $container['sample2']->handle('new'));
+        $this->assertEquals('prefix_value1__value3', $container['sample2']->handle('prefix'));
     }
 }

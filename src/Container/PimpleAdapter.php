@@ -28,4 +28,14 @@ class PimpleAdapter implements ReaderInterface
     {
         return $this->container[$name];
     }
+
+    /**
+     * @param string $name
+     *
+     * @return mixed
+     */
+    public function getParameter($name)
+    {
+        return $this->container[$name];
+    }
 }
