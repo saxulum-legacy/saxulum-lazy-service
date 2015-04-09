@@ -247,31 +247,60 @@ class Generator
      */
     protected function generateParameterNode(\ReflectionParameter $reflectionParameter)
     {
-        $default = null;
-        if ($reflectionParameter->isDefaultValueAvailable()) {
-            $defaultValue = $reflectionParameter->getDefaultValue();
-            $default = $this->prepareStatement($defaultValue);
-        }
-
-        $type = null;
-        if (null !== $class = $reflectionParameter->getClass()) {
-            $type = '\\'.$class->getName();
-        } elseif ($reflectionParameter->isArray()) {
-            $type = 'array';
-        }
-
-        $variadic = false;
-        if (is_callable(array($reflectionParameter, 'isVariadic')) && $reflectionParameter->isVariadic()) {
-            $variadic = true;
-        }
-
         return new Param(
             $reflectionParameter->getName(),
-            $default,
-            $type,
+            $this->getParameterDefault($reflectionParameter),
+            $this->getParameterTypeHint($reflectionParameter),
             $reflectionParameter->isPassedByReference(),
-            $variadic
+            $this->isParameterVariadic($reflectionParameter)
         );
+    }
+
+    /**
+     * @param \ReflectionParameter $reflectionParameter
+     *
+     * @return null|Expr
+     */
+    protected function getParameterDefault(\ReflectionParameter $reflectionParameter)
+    {
+        if ($reflectionParameter->isDefaultValueAvailable()) {
+            $defaultValue = $reflectionParameter->getDefaultValue();
+
+            return $this->prepareStatement($defaultValue);
+        }
+
+        return;
+    }
+
+    /**
+     * @param \ReflectionParameter $reflectionParameter
+     *
+     * @return null|string
+     */
+    protected function getParameterTypeHint(\ReflectionParameter $reflectionParameter)
+    {
+        if (null !== $class = $reflectionParameter->getClass()) {
+            return '\\'.$class->getName();
+        } elseif ($reflectionParameter->isArray()) {
+            return 'array';
+        }
+
+        return;
+    }
+
+    /**
+     * @param \ReflectionParameter $reflectionParameter
+     *
+     * @return bool
+     */
+    protected function isParameterVariadic(\ReflectionParameter $reflectionParameter)
+    {
+        if (is_callable(array($reflectionParameter, 'isVariadic')) &&
+            $reflectionParameter->isVariadic()) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -281,35 +310,74 @@ class Generator
      */
     protected function prepareStatement($value)
     {
-        if (is_array($value)) {
-            $items = array();
-            foreach ($value as $subKey => $subValue) {
-                $items[] = new ArrayItem($this->prepareStatement($subValue), $this->prepareStatement($subKey));
-            }
-
-            return new Array_($items);
+        $method = 'prepareStatmentFor'.ucfirst(gettype($value));
+        if (!is_callable(array($this, $method))) {
+            throw new \InvalidArgumentException(sprintf('Can\'t prepare default statement for type: %s', gettype($value)));
         }
 
-        if (is_null($value)) {
-            return new ConstFetch(new Name('null'));
+        return $this->$method($value);
+    }
+
+    /**
+     * @param array $value
+     *
+     * @return Array_
+     */
+    protected function prepareStatmentForArray($value)
+    {
+        $items = array();
+        foreach ($value as $subKey => $subValue) {
+            $items[] = new ArrayItem($this->prepareStatement($subValue), $this->prepareStatement($subKey));
         }
 
-        if (is_bool($value)) {
-            return new ConstFetch(new Name($value ? 'true' : 'false'));
-        }
+        return new Array_($items);
+    }
 
-        if (is_int($value)) {
-            return new LNumber($value);
-        }
+    /**
+     * @return ConstFetch
+     */
+    protected function prepareStatmentForNull()
+    {
+        return new ConstFetch(new Name('null'));
+    }
 
-        if (is_float($value)) {
-            return new DNumber($value);
-        }
+    /**
+     * @param bool $value
+     *
+     * @return ConstFetch
+     */
+    protected function prepareStatmentForBool($value)
+    {
+        return new ConstFetch(new Name($value ? 'true' : 'false'));
+    }
 
-        if (is_string($value)) {
-            return new String_($value);
-        }
+    /**
+     * @param int $value
+     *
+     * @return LNumber
+     */
+    protected function prepareStatmentForInt($value)
+    {
+        return new LNumber($value);
+    }
 
-        throw new \InvalidArgumentException(sprintf('Can\'t prepare default statement for type: %s', gettype($value)));
+    /**
+     * @param float $value
+     *
+     * @return DNumber
+     */
+    protected function prepareStatmentForFloat($value)
+    {
+        return new DNumber($value);
+    }
+
+    /**
+     * @param string $value
+     *
+     * @return String_
+     */
+    protected function prepareStatmentForString($value)
+    {
+        return new String_($value);
     }
 }
