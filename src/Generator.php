@@ -2,6 +2,7 @@
 
 namespace Saxulum\LazyService;
 
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayItem;
@@ -176,7 +177,7 @@ class Generator
                     new PropertyFetch(new Variable('this'), self::PROP_CONTAINER),
                     $constructArgument->getContainerMethod(),
                     array(
-                        new String_($constructArgument->getContainerKey()),
+                        new Arg(new String_($constructArgument->getContainerKey())),
                     )
                 );
             } else {
@@ -248,13 +249,13 @@ class Generator
     /**
      * @param \ReflectionMethod $reflectionMethod
      *
-     * @return Expr[]
+     * @return Arg[]
      */
     protected function generateArgumentNodes(\ReflectionMethod $reflectionMethod)
     {
         $args = array();
         foreach ($reflectionMethod->getParameters() as $reflectionParameter) {
-            $args[] = new Variable($reflectionParameter->getName());
+            $args[] = new Arg(new Variable($reflectionParameter->getName()));
         }
 
         return $args;
