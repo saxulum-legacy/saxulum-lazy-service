@@ -5,10 +5,25 @@ namespace Saxulum\Tests\LazyService\Fixtures;
 class SampleHandler1
 {
     /**
-     * @return bool
+     * @var string
      */
-    public function handle()
+    protected $value1;
+
+    /**
+     * @param string $value1
+     */
+    public function __construct($value1)
     {
-        return true;
+        $this->value1 = $value1;
+    }
+
+    /**
+     * @param string $prefix
+     *
+     * @return string
+     */
+    public function handle($prefix)
+    {
+        return $prefix.$this->value1;
     }
 }

@@ -46,7 +46,8 @@ class Generator
 
     /**
      * @param Mapping $mapping
-     * @param string $path
+     * @param string  $path
+     *
      * @return string
      */
     public function generate(Mapping $mapping, $path)
@@ -62,15 +63,15 @@ class Generator
         $classNode = new Namespace_(
             new Name(implode('\\', $lazyNamespaceParts)), array(
                 new Class_($lazyClass, array(
-                    'extends' => new Name('\\' . $mapping->getOriginalClass()),
-                    'stmts' => $nodes
-                ))
+                    'extends' => new Name('\\'.$mapping->getOriginalClass()),
+                    'stmts' => $nodes,
+                )),
             )
         );
 
-        $phpCode = '<?php' . "\n\n" . $this->phpGenerator->prettyPrint(array($classNode));
+        $phpCode = '<?php'."\n\n".$this->phpGenerator->prettyPrint(array($classNode));
 
-        file_put_contents($path . DIRECTORY_SEPARATOR . $lazyClass . '.php', $phpCode);
+        file_put_contents($path.DIRECTORY_SEPARATOR.$lazyClass.'.php', $phpCode);
     }
 
     /**
@@ -110,6 +111,7 @@ class Generator
 
     /**
      * @param Mapping $mapping
+     *
      * @return ClassMethod[]
      */
     protected function generateMethodNodes(Mapping $mapping)
@@ -120,11 +122,12 @@ class Generator
         foreach ($reflectionClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $reflectionMethod) {
             if ($reflectionMethod->getName() === '__construct') {
                 $classMethodNodes[] = $this->generateMethodConstructNode();
-                $classMethodNodes[] = $this->generateMethodOriginalNode($mapping);
             } else {
                 $classMethodNodes[] = $this->generateMethodNode($reflectionMethod);
             }
         }
+
+        $classMethodNodes[] = $this->generateMethodOriginalNode($mapping);
 
         return $classMethodNodes;
     }
@@ -154,17 +157,18 @@ class Generator
 
     /**
      * @param Mapping $mapping
+     *
      * @return ClassMethod
      */
     protected function generateMethodOriginalNode(Mapping $mapping)
     {
         $args = array();
-        foreach($mapping->getOriginalClassConstructArguments() as $constructArgument) {
+        foreach ($mapping->getOriginalClassConstructArguments() as $constructArgument) {
             $args[] = new MethodCall(
                 new PropertyFetch(new Variable('this'), self::PROP_CONTAINER),
                 'get',
                 array(
-                    new String_($constructArgument->getServiceName())
+                    new String_($constructArgument->getServiceName()),
                 )
             );
         }
@@ -181,14 +185,14 @@ class Generator
                         'stmts' => array(
                             new Assign(
                                 new PropertyFetch(new Variable('this'), self::PROP_ORIGINAL),
-                                new New_(new Name('\\' . $mapping->getOriginalClass()), $args)
+                                new New_(new Name('\\'.$mapping->getOriginalClass()), $args)
                             ),
                         ),
                     )
                 ),
                 new Return_(
                     new PropertyFetch(new Variable('this'), self::PROP_ORIGINAL)
-                )
+                ),
             ),
         ));
     }

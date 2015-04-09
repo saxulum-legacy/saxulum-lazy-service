@@ -18,13 +18,12 @@ class SampleHandler2
     }
 
     /**
-     * @param \stdClass $object
-     * @param \DateTime $date
-     * @param array $attributes
-     * @return bool
+     * @param string $prefix
+     *
+     * @return string
      */
-    public function handle(\stdClass &$object, \DateTime $date = null, array $attributes = array('test'))
+    public function handle($prefix)
     {
-        return $this->sampleHandler1->handle();
+        return $this->sampleHandler1->handle($prefix);
     }
 }

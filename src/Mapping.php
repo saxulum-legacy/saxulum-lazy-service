@@ -24,7 +24,7 @@ class Mapping
      * @param string $lazyClass
      * @param array  $originalClassConstructArguments
      */
-    public function __construct($originalClass, $lazyClass, array $originalClassConstructArguments)
+    public function __construct($originalClass, $lazyClass, array $originalClassConstructArguments = array())
     {
         $this->originalClass = $originalClass;
         $this->lazyClass = $lazyClass;
