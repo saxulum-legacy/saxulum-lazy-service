@@ -215,29 +215,49 @@ class Generator
      */
     protected function generateMethodNode(\ReflectionMethod $reflectionMethod)
     {
-        $params = array();
-        foreach ($reflectionMethod->getParameters() as $reflectionParameter) {
-            $params[] = $this->generateParameterNode($reflectionParameter);
-        }
-
-        $args = array();
-        foreach ($reflectionMethod->getParameters() as $reflectionParameter) {
-            $args[] = new Variable($reflectionParameter->getName());
-        }
-
         return new ClassMethod($reflectionMethod->getName(), array(
             'type' => 1,
-            'params' => $params,
+            'params' => $this->generateParameterNodes($reflectionMethod),
             'stmts' => array(
                 new Return_(
                     new MethodCall(
                         new MethodCall(new Variable('this'), self::PROP_ORIGINAL),
                         $reflectionMethod->getName(),
-                        $args
+                        $this->generateArgumentNodes($reflectionMethod)
                     )
                 ),
             ),
         ));
+    }
+
+    /**
+     * @param \ReflectionMethod $reflectionMethod
+     *
+     * @return Expr[]
+     */
+    protected function generateParameterNodes(\ReflectionMethod $reflectionMethod)
+    {
+        $params = array();
+        foreach ($reflectionMethod->getParameters() as $reflectionParameter) {
+            $params[] = $this->generateParameterNode($reflectionParameter);
+        }
+
+        return $params;
+    }
+
+    /**
+     * @param \ReflectionMethod $reflectionMethod
+     *
+     * @return Expr[]
+     */
+    protected function generateArgumentNodes(\ReflectionMethod $reflectionMethod)
+    {
+        $args = array();
+        foreach ($reflectionMethod->getParameters() as $reflectionParameter) {
+            $args[] = new Variable($reflectionParameter->getName());
+        }
+
+        return $args;
     }
 
     /**
