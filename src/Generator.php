@@ -64,15 +64,15 @@ class Generator
         $classNode = new Namespace_(
             new Name(implode('\\', $lazyNamespaceParts)), array(
                 new Class_($lazyClass, array(
-                    'extends' => new Name('\\'.$mapping->getOriginalClass()),
+                    'extends' => new Name('\\' . $mapping->getOriginalClass()),
                     'stmts' => $nodes,
                 )),
             )
         );
 
-        $phpCode = '<?php'."\n\n".$this->phpGenerator->prettyPrint(array($classNode));
+        $phpCode = '<?php' . "\n\n" . $this->phpGenerator->prettyPrint(array($classNode));
 
-        file_put_contents($path.DIRECTORY_SEPARATOR.$lazyClass.'.php', $phpCode);
+        file_put_contents($path . DIRECTORY_SEPARATOR . $lazyClass . ' . php', $phpCode);
     }
 
     /**
@@ -197,7 +197,7 @@ class Generator
                         'stmts' => array(
                             new Assign(
                                 new PropertyFetch(new Variable('this'), self::PROP_ORIGINAL),
-                                new New_(new Name('\\'.$mapping->getOriginalClass()), $args)
+                                new New_(new Name('\\' . $mapping->getOriginalClass()), $args)
                             ),
                         ),
                     )
@@ -290,7 +290,7 @@ class Generator
             return $this->prepareStatement($defaultValue);
         }
 
-        return;
+        return null;
     }
 
     /**
@@ -301,12 +301,12 @@ class Generator
     protected function getParameterTypeHint(\ReflectionParameter $reflectionParameter)
     {
         if (null !== $class = $reflectionParameter->getClass()) {
-            return '\\'.$class->getName();
+            return '\\' . $class->getName();
         } elseif ($reflectionParameter->isArray()) {
             return 'array';
         }
 
-        return;
+        return null;
     }
 
     /**
@@ -331,7 +331,7 @@ class Generator
      */
     protected function prepareStatement($value)
     {
-        $method = 'prepareStatmentFor'.ucfirst(gettype($value));
+        $method = 'prepareStatmentFor' . ucfirst(gettype($value));
         if (!is_callable(array($this, $method))) {
             throw new \InvalidArgumentException(sprintf('Can\'t prepare default statement for type: %s', gettype($value)));
         }
